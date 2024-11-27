@@ -1,54 +1,53 @@
 services:
-  backend_api:
+  backend:
     build:
       context: ./backend
-    container_name: backend_api_container
+    container_name: BE-Container
     ports:
       - "8000:8000"
     depends_on:
-      - postgres_db
+      - db
     env_file:
       - ./backend/.env
     networks:
-      - app_network
+      - app-network
 
-  frontend_ui:
+  frontend:
     build:
       context: ./frontend
-    container_name: frontend_ui_container
+    container_name: FE-Container
     ports:
       - "5173:5173"
     env_file:
       - ./frontend/.env
     networks:
-      - app_network
+      - app-network
 
-  postgres_db:
+  db:
     image: postgres:latest
-    container_name: postgres_db_container
+    container_name: postgres_db
     ports:
       - "5432:5432"
-    # volumes:
-    #   - ./postgres:/docker-entrypoint-initdb.d
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: favxlaw
-      POSTGRES_PASSWORD: admin
-      POSTGRES_HOST: localhost
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+#    volumes:
+#      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./backend/.env
     networks:
-      - app_network
+      - app-network
 
-  database_admin:
-    image: adminer:latest
-    container_name: database_admin_container
+  adminer:
+    image: adminer
+    container_name: adminer-container
     ports:
       - "8080:8080"
     networks:
-      - app_network
+      - app-network
 
-  nginx_proxy:
+  proxy:
     image: jc21/nginx-proxy-manager:latest
-    container_name: nginx_proxy_container
+    container_name: nginx_proxy_manager-container
     ports:
       - "80:80"
       - "443:443"
@@ -59,18 +58,18 @@ services:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
-      - postgres_db
-      - backend_api
-      - frontend_ui
-      - database_admin
+      - db
+      - backend
+      - frontend
+      - adminer
     networks:
-      - app_network
+      - app-network
 
 volumes:
   data:
   letsencrypt:
-  postgres_data:
+
 
 networks:
-  app_network:
+  app-network:
     external: true

@@ -1,29 +1,29 @@
 services:
-  backend:
+  backend_api:
     build:
       context: ./backend
-    container_name: BE-Container
+    container_name: backend_api_container
     ports:
       - "8000:8000"
     depends_on:
-      - db
+      - postgres_db
     env_file:
       - ./backend/.env
     networks:
-      - app-network
+      - service-app
 
-  frontend:
+  frontend_ui:
     build:
       context: ./frontend
-    container_name: FE-Container
+    container_name: frontend_ui_container
     ports:
       - "5173:5173"
     env_file:
       - ./frontend/.env
     networks:
-      - app-network
+      - service-app
 
-  db:
+  postgres_db:
     image: postgres:latest
     container_name: postgres_db
     ports:
@@ -35,19 +35,20 @@ services:
     env_file:
       - ./backend/.env
     networks:
-      - app-network
+      - service-app
 
-  adminer:
-    image: adminer
-    container_name: adminer-container
+
+  database_admin:
+    image: adminer:latest
+    container_name: database_admin_container
     ports:
       - "8080:8080"
     networks:
-      - app-network
+      - service-app
 
-  proxy:
+  nginx_proxy:
     image: jc21/nginx-proxy-manager:latest
-    container_name: nginx_proxy_manager-container
+    container_name: nginx_proxy_container
     ports:
       - "80:80"
       - "443:443"
@@ -58,18 +59,18 @@ services:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
     depends_on:
-      - db
-      - backend
-      - frontend
-      - adminer
+      - postgres_db
+      - backend_api
+      - frontend_ui
+      - database_admin
     networks:
-      - app-network
+      - service-app
 
 volumes:
   data:
   letsencrypt:
-
+  postgres_data:
 
 networks:
-  app-network:
+  service-app:
     external: true

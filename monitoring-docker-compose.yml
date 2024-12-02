@@ -47,11 +47,12 @@ services:
     container_name: loki_service
     user: "10001"
     volumes:
-      - ./loki-config.yaml:/mnt/config/loki-config.yaml
-      - ./loki-data:/tmp/loki
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml
+      - /tmp/loki:/loki
     ports:
       - "3100:3100"
-    command: -config.file=/mnt/config/loki-config.yaml
+    command: -config.file=/etc/loki/loki-config.yaml
+    user: "1000:1000"
     networks:
       - service-app
 

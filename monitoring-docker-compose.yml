@@ -1,0 +1,85 @@
+services:
+  grafana:
+    image: grafana/grafana
+    container_name: grafana_service
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_DOMAIN=devobs.me
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_AUTH_PROXY_ENABLED=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_SECURITY_COOKIE_SAMESITE=none
+      - GF_SECURITY_COOKIE_SECURE=true
+      - GF_SESSION_PROVIDER=memory
+      - GF_SESSION_PROVIDER_CONFIG=sessions
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - service-app
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus_service
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--web.external-url=/prometheus'
+      - '--web.route-prefix=/prometheus'
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    volumes:
+      - ./prometheus-config:/etc/prometheus 
+      - prometheus-data:/prometheus
+    depends_on:
+      - cadvisor
+    networks:
+      - service-app
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor_service
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - service-app
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki_service
+    user: "10001"
+    volumes:
+      - ./loki-config.yaml:/mnt/config/loki-config.yaml
+      - ./loki-data:/tmp/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/mnt/config/loki-config.yaml
+    networks:
+      - service-app
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: promtail_service
+    depends_on:
+      - loki
+    volumes:
+      - ./promtail-config.yaml:/mnt/config/promtail-config.yaml
+      - /var/log:/var/log
+    command: -config.file=/mnt/config/promtail-config.yaml
+    networks:
+      - service-app
+
+volumes:
+  grafana-data:
+  prometheus-data:
+
+networks:
+  service-app:
+    external: true

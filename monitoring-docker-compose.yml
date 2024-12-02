@@ -52,7 +52,6 @@ services:
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/loki-config.yaml
-    user: "1000:1000"
     networks:
       - service-app
 

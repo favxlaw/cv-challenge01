@@ -22,7 +22,7 @@ services:
       - "9090:9090"
     restart: unless-stopped
     volumes:
-      - ./prometheus-config:/etc/prometheus 
+      - ./prometheus/prometheus.yml:/etc/prometheus 
       - prometheus-data:/prometheus
     depends_on:
       - cadvisor

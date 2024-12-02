@@ -3,16 +3,7 @@ services:
     image: grafana/grafana
     container_name: grafana_service
     restart: unless-stopped
-    environment:
-      - GF_SERVER_DOMAIN=devobs.me
-      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
-      - GF_AUTH_PROXY_ENABLED=false
-      - GF_SECURITY_ALLOW_EMBEDDING=true
-      - GF_SECURITY_COOKIE_SAMESITE=none
-      - GF_SECURITY_COOKIE_SECURE=true
-      - GF_SESSION_PROVIDER=memory
-      - GF_SESSION_PROVIDER_CONFIG=sessions
+    
     ports:
       - "3000:3000"
     volumes:
